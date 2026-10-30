@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -23,16 +23,21 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Extract project
+      - name: Find project
         run: |
-          mkdir source
-          unzip -q NightShade_Telefonla_APK_Projesi.zip -d source
+          PROJECT_DIR="$(find . -name settings.gradle.kts -printf '%h\n' | head -n 1)"
+          if [ -z "$PROJECT_DIR" ]; then
+            echo "Gradle projesi bulunamadi."
+            find . -maxdepth 3 -type f
+            exit 1
+          fi
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Build APK
-        run: gradle -p source assembleDebug
+        run: gradle -p "$PROJECT_DIR" assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: NightShade-APK
-          path: source/app/build/outputs/apk/debug/app-debug.apk
+          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/app-debug.apk
