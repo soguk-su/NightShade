@@ -18,11 +18,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+     
       - name: Extract NightShade
         run: |
           mkdir -p source
-          unzip -o NightShade_Telefonla_APK_Projesi.zip -d source
+          echo "Depodaki ZIP dosyalari:"
+          find . -maxdepth 2 -type f -iname "*.zip"
+          ZIP_FILE="$(find . -maxdepth 2 -type f -iname '*NightShade*.zip' | head -n 1)"
+          if [ -z "$ZIP_FILE" ]; then
+            echo "NightShade ZIP depoda bulunamadi!"
+            exit 1
+          fi
+          echo "Bulunan dosya: $ZIP_FILE"
+          unzip -o "$ZIP_FILE" -d source
           test -f source/settings.gradle.kts
+
 
       - name: Build APK
         run: gradle -p source assembleDebug
