@@ -1,3 +1,4 @@
+
 name: Build NightShade APK
 
 on:
@@ -17,23 +18,19 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Extract NightShade
+      - name: Extract project
         run: |
-          mkdir source
-          unzip -q NightShade_Telefonla_APK_Projesi.zip -d source
-          PROJECT_DIR="$(find source -name settings.gradle.kts -printf '%h\n' | head -n 1)"
-          if [ -z "$PROJECT_DIR" ]; then
-            echo "Proje bulunamadi"
-            exit 1
-          fi
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          mkdir -p source
+          unzip -o NightShade_Telefonla_APK_Projesi.zip -d source
+          echo "ZIP contents:"
+          ls -la source
+          test -f source/settings.gradle.kts
 
       - name: Build APK
-        run: gradle -p "$PROJECT_DIR" assembleDebug
+        run: gradle -p source assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: NightShade-APK
-          path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/app-debug.apk
-
+          path: source/app/build/outputs/apk/debug/app-debug.apk
